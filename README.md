@@ -3,6 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-2.0%2B-green.svg)](https://flask.palletsprojects.com/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.4%2B-orange.svg)](https://scikit-learn.org/)
+[![Docker](https://img.shields.io/badge/Docker-Hub-blue.svg)](https://hub.docker.com/r/suhas29/sentiment-analysis-nlp)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 An enterprise-grade sentiment analysis application featuring a double-engine classifier (Logistic Regression vs. VADER Lexicon), negation-aware text preprocessing, voice dictation, real-time MLOps active feedback loops with in-memory model hot-swapping, and a batch CSV analytics dashboard.
@@ -21,27 +22,29 @@ An enterprise-grade sentiment analysis application featuring a double-engine cla
 ---
 
 ## 📂 Repository Structure
-
-```
-Sentiment-analysis/
-├── DataSet/                 # Contains the raw training dataset and preprocessed text cache
-│   ├── train.csv            # Original training dataset (27,480 rows)
-│   ├── train_clean.csv      # Preprocessed feature cache for ultra-fast retraining
-│   └── feedback.csv         # Dynamically written user correction logs
-├── Model/                   # Serialized model pipelines and training runs metadata
+sentiment-analysis-nlp/
+│
+├── DataSet/                          # Training data & feedback logs
+│   ├── train.csv                     # Original training dataset (27,480 rows)
+│   ├── train_clean.csv               # Preprocessed feature cache (fast retraining)
+│   └── feedback.csv                  # User correction logs (auto-generated)
+│
+├── Model/                            # Serialized model artifacts
 │   ├── sentiment_analysis_model.pkl  # Pickled Logistic Regression pipeline
-│   ├── model_metadata.json          # Keeps track of accuracy & training sample size
-│   └── retrain_history.json         # Logs all historical MLOps retraining runs
-├── WebSite/                 # Full Flask web application
-│   ├── api.py               # Flask REST API endpoints serving inference, feedback, and retraining
-│   ├── index.html           # Modern white-and-blue styled dashboard UI
-│   ├── script.js            # Main frontend logic (Chart.js, Web Speech API, AJAX calls)
-│   ├── styles.css           # Styling rules (animations, responsive grids, overlays)
-│   └── requirements.txt     # Python package requirements
-├── implementation_plan.md   # Architectural design, features, and verification plan
-├── LICENSE                  # MIT License
-└── README.md                # Project documentation
-```
+│   ├── model_metadata.json           # Accuracy & training sample tracking
+│   └── retrain_history.json          # Historical MLOps retraining log
+│
+├── WebSite/                          # Flask web application
+│   ├── api.py                        # REST API — inference, feedback, retraining
+│   ├── index.html                    # Dashboard UI
+│   ├── script.js                     # Frontend logic (Chart.js, Web Speech API)
+│   ├── styles.css                    # Styling & animations
+│   └── requirements.txt              # Python dependencies
+│
+├── Dockerfile                        # Container build definition
+├── implementation_plan.md            # Architecture & design notes
+├── LICENSE                           # MIT License
+└── README.md                         # Project documentation
 
 ---
 
@@ -49,8 +52,8 @@ Sentiment-analysis/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Suhas-G-r/Sentiment-analysis.git
-cd Sentiment-analysis/Sentiment-analysis-main
+git clone https://github.com/Suhas-G-r/sentiment-analysis-nlp.git
+cd sentiment-analysis-nlp
 ```
 
 ### 2. Set up Virtual Environment & Install Dependencies
@@ -81,6 +84,32 @@ Once the server starts up, open your web browser and navigate to:
 
 ---
 
+## 🐳 Run with Docker
+
+No Python setup needed — pull the pre-built image straight from Docker Hub:
+
+```bash
+docker pull suhas29/sentiment-analysis-nlp:latest
+docker run -p 5000:5000 suhas29/sentiment-analysis-nlp:latest
+```
+
+Then open **[http://localhost:5000](http://localhost:5000)** in your browser.
+
+🔗 **Docker Hub:** [suhas29/sentiment-analysis-nlp](https://hub.docker.com/r/suhas29/sentiment-analysis-nlp)
+
+<details>
+<summary>Or build the image yourself from source</summary>
+
+```bash
+git clone https://github.com/Suhas-G-r/sentiment-analysis-nlp.git
+cd sentiment-analysis-nlp
+docker build -t sentiment-analysis-nlp .
+docker run -p 5000:5000 sentiment-analysis-nlp
+```
+</details>
+
+---
+
 ## ⚙️ How It Works (Under the Hood)
 
 ### Text Preprocessing & TF-IDF Vectorization
@@ -105,6 +134,7 @@ Instead of using slow row-by-row iteration loops, the `/analyze_batch` endpoint 
 * **Chart.js:** Frontend interactive visualizations (donut charts, bar charts, line graphs).
 * **Web Speech API:** HTML5 browser speech-recognition engine.
 * **Pandas:** High-performance data manipulation and vectorized file processing.
+* **Docker:** Containerized deployment for consistent, portable environments.
 
 ---
 

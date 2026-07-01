@@ -1,0 +1,31 @@
+Review_ID,User_Name,Rating,Review_Content,Date_Posted,Category
+R101,Suhas G R,5,"Absolutely love this app! The voice recognition is highly accurate and clean.",2026-07-01,General
+R102,John Doe,4,"To be honest, the new update is not bad at all.",2026-07-01,Product
+R103,Jane Smith,1,"Terrible experience, it keeps crashing on startup and wastes my time.",2026-07-01,Technical
+R104,Alice W.,2,"I am never using this browser dictation tool again, it is awful.",2026-07-01,Dictation
+R105,Bob M.,3,"It works okay, but the user interface is just standard and basic.",2026-07-01,Design
+R106,Charlie K.,5,"This speech recognition loop works flawlessly on my Microsoft Edge browser.",2026-07-01,Dictation
+R107,Dr. Miller,3,"Patient is male, age 63, with normal cholesterol levels.",2026-07-01,Medical
+R108,Grace H.,5,"Incredible performance! Suhas G R did an amazing job building this clean UI.",2026-07-01,Developer
+R109,David P.,1,"Complete waste of money. The support team is useless and unhelpful.",2026-07-01,Support
+R110,Emma L.,4,"The dictation works well, but it is not great for long sentences.",2026-07-01,Dictation
+R111,Frank T.,3,"I used the application on my Chrome browser today at the office.",2026-07-01,General
+R112,Sarah J.,5,"So happy with the latest changes! Everything runs smooth and fast.",2026-07-01,General
+R113,Tom B.,1,"This app is terrible and very frustrating to use.",2026-07-01,General
+R114,Linda C.,4,"A very healthy and stable release. Good job to the development team.",2026-07-01,Product
+R115,James R.,3,"The system is running, but I see no major improvements yet.",2026-07-01,General
+R116,Kate S.,1,"Oh great, another update that breaks dictation. Exactly what I wanted.",2026-07-01,Sarcasm
+R117,Mark Z.,4,"The transcription is excellent, but the loading time is horrible.",2026-07-01,Mixed
+R118,Kelly F.,5,"omg works so well 🔥",2026-07-01,Slang
+R119,Ryan G.,1,"wtf is this garbage, absolute trash",2026-07-01,Slang
+R120,Megan D.,3,"I cannot say that I do not like it, it has some decent parts.",2026-07-01,Double_Negation
+R121,Dr. Adams,3,"High blood pressure, blood sugar normal, cholesterol 240.",2026-07-01,Medical
+R122,Jason M.,2,"The ML model makes too many errors on basic sentences.",2026-07-01,Model
+R123,Sophia V.,5,"Highly recommended! It does exactly what it promises on the box.",2026-07-01,General
+R124,Brian O.,1,"It froze on my screen and I had to force-restart the browser.",2026-07-01,Technical
+R125,Chloe P.,3,"The application server is hosted on port 5000 on localhost.",2026-07-01,Factual
+R126,Dan K.,2,"I wanted to like this, but the bugs make it impossible to use.",2026-07-01,Mixed
+R127,Lily A.,5,"Flawless execution. Best sentiment analyzer I have used this year.",2026-07-01,General
+R128,Oscar L.,1,"Horrible UI, terrible buttons, and the speech recognition fails constantly.",2026-07-01,Design
+R129,Zoe T.,3,"The sentiment analysis is performed using a Logistic Regression model.",2026-07-01,Factual
+R130,Leo N.,5,"Exceptional service! Quick response and high-quality output.",2026-07-01,Support

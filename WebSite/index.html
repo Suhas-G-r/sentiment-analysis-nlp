@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis — Decoding Emotion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo and Header matching screenshot -->
+        <header>
+            <div class="logo-group">
+                <i class="fas fa-brain header-logo"></i>
+                <span class="header-title">Sentiment Analysis</span>
+            </div>
+            <p class="subtitle">Analyze the sentiment of your text using advanced AI</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="single-tab">
+                <i class="fas fa-keyboard"></i> Single Text
+            </button>
+            <button class="tab-btn" data-tab="batch-tab">
+                <i class="fas fa-file-csv"></i> Batch CSV Upload
+            </button>
+        </div>
+
+        <!-- Tab 1: Single Text Analyzer -->
+        <div id="single-tab" class="tab-content active">
+            <!-- Input Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-edit"></i> Input Text</h3>
+                    <div class="engine-selector">
+                        <label for="engineSelect">Model Engine:</label>
+                        <select id="engineSelect" class="styled-select">
+                            <option value="ml">Machine Learning (Logistic Regression)</option>
+                            <option value="lexicon">Lexicon Engine (VADER)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="input-container">
+                    <textarea id="textInput" placeholder="Type, paste, or dictate your text here to analyze sentiment..." rows="4"></textarea>
+                    <div class="input-actions">
+                        <div class="emoji-container">
+                            <button id="emojiBtn" class="action-icon-btn" title="Insert Emoji" type="button">
+                                <i class="far fa-smile"></i>
+                            </button>
+                            <div id="emojiPopover" class="emoji-popover" style="display: none;">
+                                <span class="emoji-item">😀</span>
+                                <span class="emoji-item">😂</span>
+                                <span class="emoji-item">😍</span>
+                                <span class="emoji-item">😢</span>
+                                <span class="emoji-item">😡</span>
+                                <span class="emoji-item">👍</span>
+                                <span class="emoji-item">👎</span>
+                                <span class="emoji-item">❤️</span>
+                                <span class="emoji-item">💔</span>
+                                <span class="emoji-item">🎉</span>
+                            </div>
+                        </div>
+                        <button id="micBtn" class="mic-btn" title="Speak to text" type="button">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Voice Recording Overlay -->
+                    <div id="voiceOverlay" class="voice-overlay" style="display: none;">
+                        <div class="voice-recording-row">
+                            <span class="voice-timer" id="voiceTimer">0:00</span>
+                            <div class="voice-waves" id="voiceWaves">
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                            </div>
+                        </div>
+                        <div class="voice-actions-row">
+                            <button id="voiceCancelBtn" class="voice-action-btn cancel-btn" title="Delete Recording" type="button">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                            <button id="voicePauseBtn" class="voice-action-btn pause-btn" title="Pause Recording" type="button">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button id="voiceStopBtn" class="voice-action-btn send-btn" title="Send & Transcribe" type="button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="analyzeBtn" class="analyze-btn">
+                    <i class="fas fa-magic"></i> Analyze Sentiment
+                </button>
+            </div>
+
+            <!-- Single Result Card (Hidden by default) -->
+            <div id="resultSection" class="card result-card" style="display: none;">
+                <div class="sentiment-display-container">
+                    <div id="sentimentDisplay" class="sentiment-display">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Word Highlight XAI -->
+                <div class="highlight-container">
+                    <h3><i class="fas fa-eye"></i> Word-Level Sentiment Influence</h3>
+                    <p class="highlight-desc">Highlighted words show model influence: <span class="badge pos-badge">Positive Influence</span> and <span class="badge neg-badge">Negative Influence</span>. Hover over words to inspect weights.</p>
+                    <div id="highlightedText" class="highlighted-text"></div>
+                </div>
+                
+                <!-- Aspect-Based Sentiment Analysis -->
+                <div class="aspects-container">
+                    <h3><i class="fas fa-tags"></i> Aspect-Based Analysis</h3>
+                    <p class="highlight-desc">Discovers key nouns in the text and classifies the sentiment of their specific surrounding context.</p>
+                    <div id="aspectsDisplay" class="aspects-grid">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Model Debug & Visualization Grid -->
+                <div class="grid-2">
+                    <div class="card-inner">
+                        <h3><i class="fas fa-code"></i> Model Debug Info</h3>
+                        <div class="debug-content">
+                            <p><strong>Processed Tokenized Text:</strong></p>
+                            <p id="processedText" class="code-text"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-inner">
+                        <h3><i class="fas fa-chart-column"></i> Word Frequency Analysis</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="frequencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Correction & Feedback (Feature 2) -->
+                <div class="correction-container" id="correctionContainer">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Incorrect Sentiment Classification?</h3>
+                    <p class="highlight-desc">If the predicted sentiment is wrong, select the correct classification and submit it to append to our retraining feedback logs.</p>
+                    <div class="correction-controls">
+                        <select id="correctionSentimentSelect" class="styled-select">
+                            <option value="positive">Positive Sentiment</option>
+                            <option value="neutral" selected>Neutral Sentiment</option>
+                            <option value="negative">Negative Sentiment</option>
+                        </select>
+                        <button id="submitFeedbackBtn" class="btn-primary" type="button" style="width: auto; padding: 8px 20px; font-size: 0.85rem; border-radius: 8px; margin-top: 0;">
+                            <i class="fas fa-paper-plane"></i> Submit Correction
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Text Statistics Section (Moved to the end) -->
+                <div class="text-stats-container">
+                    <h3>Text Statistics</h3>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-label">Word Count</span>
+                            <span id="statWordCount" class="stat-val">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Character Count</span>
+                            <span id="statCharCount" class="stat-val">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Emoji Count</span>
+                            <span id="statEmojiCount" class="stat-val">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predefined Examples Card -->
+            <div class="card">
+                <h3><i class="fas fa-lightbulb"></i> Try These Examples</h3>
+                <div class="example-buttons">
+                    <button class="example-btn" data-text="I absolutely love this product! It is amazing, runs very smooth, and works perfectly.">
+                        <i class="fas fa-smile text-success"></i> Positive Example
+                    </button>
+                    <button class="example-btn" data-text="This is the worst experience ever. I am very disappointed, and the support was awful.">
+                        <i class="fas fa-frown text-error"></i> Negative Example
+                    </button>
+                    <button class="example-btn" data-text="The product arrived on time and seems to be working as expected, nothing spectacular.">
+                        <i class="fas fa-meh text-neutral"></i> Neutral Example
+                    </button>
+                </div>
+            </div>
+
+            <!-- Model Performance & MLOps Retraining Card (Feature 2) -->
+            <div class="card MLOps-card">
+                <h3><i class="fas fa-sync-alt"></i> Model Management & MLOps</h3>
+                <p class="highlight-desc">This panel manages active MLOps learning. You can retrain the underlying Logistic Regression model with user feedback to improve accuracy.</p>
+                <div class="retrain-dashboard-grid">
+                    <div class="retrain-stat-item">
+                        <span class="retrain-label">Current ML Accuracy</span>
+                        <span id="retrainAccuracyVal" class="retrain-val">Loading...</span>
+                    </div>
+                    <div class="retrain-stat-item">
+                        <span class="retrain-label">Feedback Samples</span>
+                        <span id="retrainFeedbackCountVal" class="retrain-val">0</span>
+                    </div>
+                    <button id="runRetrainingBtn" class="analyze-btn" type="button" style="width: auto; height: 50px; padding: 0 30px; font-size: 0.95rem; margin-top: 0;">
+                        <i class="fas fa-cog"></i> Retrain Model
+                    </button>
+                    <button id="toggleHistoryBtn" class="btn-secondary-outline" type="button" style="width: auto; height: 50px; padding: 0 25px; font-size: 0.95rem; margin-top: 0; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-history"></i> ML Accuracy History
+                    </button>
+                    <button id="resetModelBtn" class="btn-danger-outline" type="button" style="width: auto; height: 50px; padding: 0 25px; font-size: 0.95rem; margin-top: 0; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-undo"></i> Reset Model
+                    </button>
+                </div>
+                
+                <!-- Retraining History Section -->
+                <div id="retrainHistoryContainer" class="retrain-history-container" style="margin-top: 25px; border-top: 1px solid rgba(0, 0, 0, 0.08); padding-top: 20px; display: none;">
+                    <h4 style="font-size: 1.05rem; color: #1e293b; margin-bottom: 5px;"><i class="fas fa-history" style="color: #3b82f6; margin-right: 8px;"></i> Retraining Performance History</h4>
+                    <p class="highlight-desc" style="margin-bottom: 15px;">Monitor how classification accuracy fluctuates as the model ingests new user corrections over time.</p>
+                    <div class="grid-2" style="margin-top: 15px; align-items: start; gap: 20px;">
+                        <div class="card-inner" style="background: rgba(255, 255, 255, 0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.1); margin-bottom: 0;">
+                            <h5 style="margin-top: 0; margin-bottom: 10px; color: #475569; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Accuracy Progression Chart</h5>
+                            <div class="chart-wrapper" style="position: relative; height: 160px; width: 100%;">
+                                <canvas id="retrainHistoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card-inner" style="background: rgba(255, 255, 255, 0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.1); margin-bottom: 0;">
+                            <h5 style="margin-top: 0; margin-bottom: 10px; color: #475569; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Run Event Log</h5>
+                            <div style="height: 160px; overflow-y: auto; padding-right: 5px;">
+                                <ul id="retrainHistoryList" class="history-list" style="list-style: none; padding: 0; margin: 0;">
+                                    <!-- Loaded dynamically -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Batch CSV Upload -->
+        <div id="batch-tab" class="tab-content">
+            <!-- File Upload Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-upload"></i> Upload CSV Dataset</h3>
+                    <div class="engine-selector">
+                        <label for="batchEngineSelect">Model Engine:</label>
+                        <select id="batchEngineSelect" class="styled-select">
+                            <option value="ml">Machine Learning (Logistic Regression)</option>
+                            <option value="lexicon">Lexicon Engine (VADER)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="dropZone" class="drop-zone">
+                    <i class="fas fa-file-csv drop-icon"></i>
+                    <p class="drop-text">Drag & drop your CSV file here or <span class="browse-link">browse files</span></p>
+                    <p class="drop-hint">CSV must contain a column for text (e.g., 'text', 'review', 'comment', or similar)</p>
+                    <input type="file" id="fileInput" accept=".csv" style="display: none;" />
+                </div>
+                
+                <div id="uploadProgress" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <p id="progressStatus" class="progress-status">Uploading & analyzing file...</p>
+                </div>
+            </div>
+
+            <!-- Batch Results Dashboard (Hidden by default) -->
+            <div id="batchResultSection" class="card result-card" style="display: none;">
+                <!-- Widgets Summary Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-database"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statTotalRows">0</h4>
+                            <p>Total Rows</p>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-pos">
+                        <div class="stat-icon"><i class="fas fa-smile"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statPosPercent">0%</h4>
+                            <p>Positive</p>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-neg">
+                        <div class="stat-icon"><i class="fas fa-frown"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statNegPercent">0%</h4>
+                            <p>Negative</p>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-neu">
+                        <div class="stat-icon"><i class="fas fa-meh"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statNeuPercent">0%</h4>
+                            <p>Neutral</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Dashboard Charts -->
+                <div class="grid-2">
+                    <div class="card-inner">
+                        <h3><i class="fas fa-chart-pie"></i> Sentiment Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="batchDistributionChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card-inner">
+                        <h3><i class="fas fa-font"></i> Top Keywords in Dataset</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="batchKeywordsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Bar -->
+                <div class="action-bar">
+                    <h3><i class="fas fa-table"></i> Dataset Preview (Top 100 Rows)</h3>
+                    <a id="downloadBtn" href="#" class="btn-primary-link" download>
+                        <i class="fas fa-download"></i> Download Processed CSV
+                    </a>
+                </div>
+
+                <!-- Data Table Filters -->
+                <div class="filter-bar">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="tableSearch" placeholder="Search preview rows..." />
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="tableSentimentFilter" class="styled-select">
+                            <option value="all">All Sentiments</option>
+                            <option value="positive">Positive Only</option>
+                            <option value="negative">Negative Only</option>
+                            <option value="neutral">Neutral Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Preview Table -->
+                <div class="table-container">
+                    <table id="previewTable">
+                        <thead>
+                            <tr id="tableHeaderRow">
+                                <!-- Loaded dynamically -->
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Crafted with <i class="fas fa-heart text-error"></i> using Python & Machine Learning</p>
+        </footer>
+    </div>
+    
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+﻿venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+WebSite/temp_batches/
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+.git/
+Model/sentiment-analysis.ipynb

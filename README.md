@@ -22,30 +22,42 @@ An enterprise-grade sentiment analysis application featuring a double-engine cla
 ---
 
 ## 📂 Repository Structure
+
+```
 sentiment-analysis-nlp/
-│
-├── DataSet/                          # Training data & feedback logs
-│   ├── train.csv                     # Original training dataset (27,480 rows)
-│   ├── train_clean.csv               # Preprocessed feature cache (fast retraining)
-│   └── feedback.csv                  # User correction logs (auto-generated)
-│
-├── Model/                            # Serialized model artifacts
-│   ├── sentiment_analysis_model.pkl  # Pickled Logistic Regression pipeline
-│   ├── model_metadata.json           # Accuracy & training sample tracking
-│   └── retrain_history.json          # Historical MLOps retraining log
-│
-├── WebSite/                          # Flask web application
-│   ├── api.py                        # REST API — inference, feedback, retraining
-│   ├── index.html                    # Dashboard UI
-│   ├── script.js                     # Frontend logic (Chart.js, Web Speech API)
-│   ├── styles.css                    # Styling & animations
-│   └── requirements.txt              # Python dependencies
-│
+├── DataSet/
+│   ├── feedback.csv
+│   ├── test.csv
+│   ├── train.csv
+│   └── train_clean.csv
+├── Dockerfile
+├── LICENSE
+├── Model/
+│   ├── model_metadata.json
+│   ├── retrain_history.json
+│   ├── sentiment-analysis.ipynb
+│   └── sentiment_analysis_model.pkl
+├── README.md
+├── implementation_plan.md
+├── customer_feedback_dump.csv
+├── step1_train_model.py
+├── .dockerignore
+├── .gitignore
+├── venv/
+└── WebSite/
+    ├── api.py
+    ├── index.html
+    ├── requirements.txt
+    ├── script.js
+    ├── styles.css
+    └── temp_batches/
+```
 ├── Dockerfile                        # Container build definition
 ├── implementation_plan.md            # Architecture & design notes
 ├── LICENSE                           # MIT License
 └── README.md                         # Project documentation
 
+```
 ---
 
 ## 🚀 Getting Started

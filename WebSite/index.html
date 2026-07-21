@@ -170,8 +170,8 @@
 
                 <!-- Model Correction & Feedback (Feature 2) -->
                 <div class="correction-container" id="correctionContainer">
-                    <h3><i class="fas fa-exclamation-triangle"></i> Incorrect Sentiment Classification?</h3>
-                    <p class="highlight-desc">If the predicted sentiment is wrong, select the correct classification and submit it to append to our retraining feedback logs.</p>
+                    <h3><i class="fas fa-lightbulb"></i> Improve the Model with Your Feedback</h3>
+                    <p class="highlight-desc">If you believe the predicted sentiment is incorrect, select the correct sentiment and submit your feedback. Your correction will be stored and can be used to retrain the model, helping it improve over time.</p>
                     <div class="correction-controls">
                         <select id="correctionSentimentSelect" class="styled-select">
                             <option value="positive">Positive Sentiment</option>
@@ -179,8 +179,23 @@
                             <option value="negative">Negative Sentiment</option>
                         </select>
                         <button id="submitFeedbackBtn" class="btn-primary" type="button" style="width: auto; padding: 8px 20px; font-size: 0.85rem; border-radius: 8px; margin-top: 0;">
-                            <i class="fas fa-paper-plane"></i> Submit Correction
+                            <i class="fas fa-paper-plane"></i> Submit Feedback
                         </button>
+                    </div>
+                    <!-- Inline success banner shown after feedback submission -->
+                    <div id="feedbackSuccessBanner" style="display: none; margin-top: 14px; background: rgba(16, 185, 129, 0.07); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <span style="font-size: 1rem; line-height: 1.6;">✅</span>
+                            <div>
+                                <strong style="display: block; margin-bottom: 4px; color: #047857;">Feedback Saved Successfully</strong>
+                                <span style="color: #374151; font-size: 0.82rem;">Your correction has been added to the feedback dataset. Visit the <strong>Model Management &amp; MLOps</strong> section and click <strong>Retrain Model</strong> to update the model using your feedback.</span>
+                                <div style="margin-top: 10px;">
+                                    <button id="goToMlopsBtn" type="button" style="background: none; border: 1px solid rgba(16, 185, 129, 0.4); color: #047857; border-radius: 6px; padding: 5px 12px; font-size: 0.78rem; cursor: pointer; font-family: inherit; font-weight: 500;">
+                                        Go to MLOps Dashboard ↓
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -223,23 +238,35 @@
             <!-- Model Performance & MLOps Retraining Card (Feature 2) -->
             <div class="card MLOps-card">
                 <h3><i class="fas fa-sync-alt"></i> Model Management & MLOps</h3>
-                <p class="highlight-desc">This panel manages active MLOps learning. You can retrain the underlying Logistic Regression model with user feedback to improve accuracy.</p>
+                <p class="highlight-desc">Manage the deployed Logistic Regression model using a feedback-driven MLOps workflow. User corrections are collected as training samples and can be used to retrain the model. After retraining, the updated model accuracy is recorded so you can track performance improvements over time.</p>
+                <div style="background: rgba(59, 130, 246, 0.06); border: 1px solid rgba(59, 130, 246, 0.18); border-radius: 8px; padding: 12px 16px; margin-top: 12px; margin-bottom: 4px; font-size: 0.82rem; color: #475569; line-height: 1.75;">
+                    <strong style="color: #3b82f6; display: block; margin-bottom: 6px;">💡 How it works</strong>
+                    <ol style="margin: 0; padding-left: 18px;">
+                        <li>Predict the sentiment of a text using the ML model.</li>
+                        <li>If the prediction is incorrect, submit the correct label using the feedback form above.</li>
+                        <li>Your feedback is stored as a training sample.</li>
+                        <li>Click <strong>Retrain Model</strong> to incorporate all feedback into an updated model.</li>
+                        <li>View the updated accuracy using <strong>ML Accuracy History</strong>.</li>
+                    </ol>
+                </div>
                 <div class="retrain-dashboard-grid">
                     <div class="retrain-stat-item">
-                        <span class="retrain-label">Current ML Accuracy</span>
+                        <span class="retrain-label">Current Validation Accuracy</span>
                         <span id="retrainAccuracyVal" class="retrain-val">Loading...</span>
+                        <small style="display: block; font-size: 0.72rem; color: #94a3b8; margin-top: 2px; font-weight: 400; text-transform: none; letter-spacing: 0;">Held-out validation set score</small>
                     </div>
                     <div class="retrain-stat-item">
                         <span class="retrain-label">Feedback Samples</span>
                         <span id="retrainFeedbackCountVal" class="retrain-val">0</span>
+                        <small id="feedbackEmptyMsg" style="display: block; font-size: 0.72rem; color: #94a3b8; margin-top: 2px; font-weight: 400; text-transform: none; letter-spacing: 0;">No feedback collected yet.</small>
                     </div>
-                    <button id="runRetrainingBtn" class="analyze-btn" type="button" style="width: auto; height: 50px; padding: 0 30px; font-size: 0.95rem; margin-top: 0;">
+                    <button id="runRetrainingBtn" class="analyze-btn" type="button" style="width: auto; height: 50px; padding: 0 30px; font-size: 0.95rem; margin-top: 0;" title="Retrain the Logistic Regression model using all collected user feedback.">
                         <i class="fas fa-cog"></i> Retrain Model
                     </button>
-                    <button id="toggleHistoryBtn" class="btn-secondary-outline" type="button" style="width: auto; height: 50px; padding: 0 25px; font-size: 0.95rem; margin-top: 0; display: inline-flex; align-items: center; gap: 8px;">
+                    <button id="toggleHistoryBtn" class="btn-secondary-outline" type="button" style="width: auto; height: 50px; padding: 0 25px; font-size: 0.95rem; margin-top: 0; display: inline-flex; align-items: center; gap: 8px;" title="View how the model accuracy has changed after each retraining session.">
                         <i class="fas fa-history"></i> ML Accuracy History
                     </button>
-                    <button id="resetModelBtn" class="btn-danger-outline" type="button" style="width: auto; height: 50px; padding: 0 25px; font-size: 0.95rem; margin-top: 0; display: inline-flex; align-items: center; gap: 8px;">
+                    <button id="resetModelBtn" class="btn-danger-outline" type="button" style="width: auto; height: 50px; padding: 0 25px; font-size: 0.95rem; margin-top: 0; display: inline-flex; align-items: center; gap: 8px;" title="Restore the original trained model and clear all feedback-based improvements.">
                         <i class="fas fa-undo"></i> Reset Model
                     </button>
                 </div>

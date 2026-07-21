@@ -1126,6 +1126,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 document.getElementById('retrainAccuracyVal').textContent = data.accuracy;
                 document.getElementById('retrainFeedbackCountVal').textContent = data.feedback_count;
+                // Toggle empty state message based on feedback count
+                const feedbackEmptyMsg = document.getElementById('feedbackEmptyMsg');
+                if (feedbackEmptyMsg) {
+                    feedbackEmptyMsg.style.display = data.feedback_count > 0 ? 'none' : 'block';
+                }
                 if (data.history) {
                     updateRetrainHistory(data.history);
                 }
@@ -1162,22 +1167,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Failed to submit correction feedback.');
                 
                 const data = await response.json();
-                showToast(data.message || 'Correction logged successfully!', 'success');
+                showToast('Feedback saved! Click Retrain Model in the MLOps section to update the model.', 'success');
                 
                 // Sync the feedback count on the MLOps card
                 document.getElementById('retrainFeedbackCountVal').textContent = data.feedback_count;
                 
-                // Dim container and mark button as submitted
-                const correctionContainer = document.getElementById('correctionContainer');
-                if (correctionContainer) {
-                    correctionContainer.style.opacity = '0.7';
+                // Toggle feedback empty state message
+                const feedbackEmptyMsgFb = document.getElementById('feedbackEmptyMsg');
+                if (feedbackEmptyMsgFb) {
+                    feedbackEmptyMsgFb.style.display = data.feedback_count > 0 ? 'none' : 'block';
                 }
-                submitFeedbackBtn.innerHTML = '<i class="fas fa-check"></i> Correction Logged';
+                
+                // Show inline success banner
+                const feedbackSuccessBanner = document.getElementById('feedbackSuccessBanner');
+                if (feedbackSuccessBanner) {
+                    feedbackSuccessBanner.style.display = 'block';
+                }
+                submitFeedbackBtn.innerHTML = '<i class="fas fa-check"></i> Feedback Submitted';
             } catch (error) {
                 console.error(error);
                 showToast('Error submitting feedback. Please try again.', 'error');
                 submitFeedbackBtn.disabled = false;
-                submitFeedbackBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Correction';
+                submitFeedbackBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+            }
+        });
+    }
+
+    // Bind go-to-MLOps scroll button inside feedback success banner
+    const goToMlopsBtn = document.getElementById('goToMlopsBtn');
+    if (goToMlopsBtn) {
+        goToMlopsBtn.addEventListener('click', () => {
+            const mlopsCard = document.querySelector('.MLOps-card');
+            if (mlopsCard) {
+                mlopsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         });
     }
@@ -1211,11 +1233,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset correction UI buttons if they had submitted correction
                 if (submitFeedbackBtn) {
                     submitFeedbackBtn.disabled = false;
-                    submitFeedbackBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Correction';
-                    const correctionContainer = document.getElementById('correctionContainer');
-                    if (correctionContainer) {
-                        correctionContainer.style.opacity = '1.0';
-                    }
+                    submitFeedbackBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                    const feedbackSuccessBannerR = document.getElementById('feedbackSuccessBanner');
+                    if (feedbackSuccessBannerR) feedbackSuccessBannerR.style.display = 'none';
+                }
+                // Update feedback empty state after retraining
+                const feedbackEmptyMsgR = document.getElementById('feedbackEmptyMsg');
+                if (feedbackEmptyMsgR) {
+                    feedbackEmptyMsgR.style.display = data.feedback_count > 0 ? 'none' : 'block';
                 }
                 
                 // Re-run analysis immediately if result is visible so user sees the change in real-time
@@ -1298,11 +1323,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset correction UI buttons if they had submitted correction
                 if (submitFeedbackBtn) {
                     submitFeedbackBtn.disabled = false;
-                    submitFeedbackBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Correction';
-                    const correctionContainer = document.getElementById('correctionContainer');
-                    if (correctionContainer) {
-                        correctionContainer.style.opacity = '1.0';
-                    }
+                    submitFeedbackBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                    const feedbackSuccessBannerRst = document.getElementById('feedbackSuccessBanner');
+                    if (feedbackSuccessBannerRst) feedbackSuccessBannerRst.style.display = 'none';
+                }
+                // Update feedback empty state after reset
+                const feedbackEmptyMsgReset = document.getElementById('feedbackEmptyMsg');
+                if (feedbackEmptyMsgReset) {
+                    feedbackEmptyMsgReset.style.display = data.feedback_count > 0 ? 'none' : 'block';
                 }
                 
                 // Re-run analysis immediately if result is visible so user sees the change in real-time

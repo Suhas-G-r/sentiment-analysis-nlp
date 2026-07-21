@@ -334,46 +334,62 @@ def analyze_batch():
         
     try:
         filename = file.filename.lower()
-        ROW_LIMIT = 2_000  # Keep well within Render free-tier 30s timeout
+        ROW_LIMIT = 500  # Safe for Render free tier (512MB RAM, 30s timeout)
 
         if filename.endswith('.txt'):
-            # --- Smart .txt parser (reads only first ROW_LIMIT lines to avoid OOM) ---
-            raw_content = file.read().decode('utf-8', errors='replace')
-            all_lines = [l.rstrip('\n\r') for l in raw_content.splitlines() if l.strip()]
-            original_row_count = len(all_lines)
-            lines = all_lines[:ROW_LIMIT]  # cap before building df
+            # --- Stream .txt line-by-line (never loads full file into RAM) ---
+            import io as _io
+            stream = _io.TextIOWrapper(file.stream, encoding='utf-8', errors='replace')
+            lines = []
+            original_row_count = 0
+            first_line = None
+            for raw_line in stream:
+                stripped = raw_line.rstrip('\n\r').strip()
+                if not stripped:
+                    continue
+                original_row_count += 1
+                if first_line is None:
+                    first_line = stripped
+                if len(lines) < ROW_LIMIT:
+                    lines.append(stripped)
 
             if not lines:
                 return jsonify({'error': 'Empty text file'}), 400
 
-            # Detect FastText format: lines start with __label__
-            if lines[0].startswith('__label__'):
+            # Detect format from first non-empty line
+            if first_line and first_line.startswith('__label__'):
                 texts = []
                 for line in lines:
                     parts = line.split(' ', 1)
                     texts.append(parts[1] if len(parts) > 1 else '')
                 df = pd.DataFrame({'text': texts})
-            # Detect TSV (tab-separated)
-            elif '\t' in lines[0]:
-                import io
-                df = pd.read_csv(io.StringIO('\n'.join(lines)), sep='\t', on_bad_lines='skip')
+            elif first_line and '\t' in first_line:
+                import io as _io2
+                df = pd.read_csv(_io2.StringIO('\n'.join(lines)), sep='\t', on_bad_lines='skip')
             else:
                 df = pd.DataFrame({'text': lines})
-            # --- End .txt parser ---
+            # --- End .txt streaming parser ---
         else:
-            df = pd.read_csv(file)
-            original_row_count = len(df)
+            # For CSV: only read ROW_LIMIT rows — never loads full file
+            df = pd.read_csv(file, nrows=ROW_LIMIT + 1)  # +1 to detect truncation
+            original_row_count = None  # unknown without reading full file
 
         if len(df) == 0:
             return jsonify({'error': 'Empty file'}), 400
 
-        # Cap rows (mainly for CSV; .txt already capped above)
+        # Cap and track truncation
         truncated_to = None
-        if len(df) > ROW_LIMIT:
-            df = df.head(ROW_LIMIT)
-            truncated_to = ROW_LIMIT
-        elif original_row_count > ROW_LIMIT:
-            truncated_to = ROW_LIMIT
+        if filename.endswith('.txt'):
+            if original_row_count > ROW_LIMIT:
+                truncated_to = ROW_LIMIT
+        else:
+            # For CSV: if we got ROW_LIMIT+1 rows, file has more
+            original_row_count = len(df)
+            if len(df) > ROW_LIMIT:
+                df = df.head(ROW_LIMIT)
+                truncated_to = ROW_LIMIT
+                original_row_count = f'{ROW_LIMIT}+'
+
 
 
         # Find the text column (first check exact, then check substring matches, skipping metadata)

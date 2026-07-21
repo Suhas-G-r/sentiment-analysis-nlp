@@ -809,8 +809,11 @@ document.addEventListener('DOMContentLoaded', () => {
             progressFill.style.width = '100%';
             progressFill.style.background = '#ef4444';
             progressStatus.textContent =
-                `File too large (${fileSizeMB} MB). Max allowed is 10 MB. ` +
-                `Create a smaller sample with the first 500 rows and try again.`;
+                `This file is too large for interactive analysis (${fileSizeMB} MB). ` +
+                `Maximum supported upload: 10 MB. ` +
+                `For larger datasets, create a smaller sample or run the project locally.`;
+            const rc = document.getElementById('rowCounter');
+            if (rc) rc.textContent = '';
             return;
         }
         if (file.size > WARN_SIZE_BYTES) {
@@ -834,6 +837,21 @@ document.addEventListener('DOMContentLoaded', () => {
             progressStatus.textContent = 'Uploading & analyzing dataset...';
             batchResultSection.style.display = 'none';
 
+            // Animated row counter — gives live feedback while server processes
+            const rowCounter = document.getElementById('rowCounter');
+            const ROW_LIMIT = 1000;
+            let counted = 0;
+            let counterInterval = null;
+            if (rowCounter) {
+                rowCounter.textContent = `(row 0 / ~${ROW_LIMIT.toLocaleString()})`;
+                counterInterval = setInterval(() => {
+                    const step = Math.ceil(ROW_LIMIT / 60); // finish in ~6s
+                    counted = Math.min(counted + step, ROW_LIMIT);
+                    rowCounter.textContent = `(row ${counted.toLocaleString()} / ~${ROW_LIMIT.toLocaleString()})`;
+                    if (counted >= ROW_LIMIT) clearInterval(counterInterval);
+                }, 100);
+            }
+
             // Simulate progress transition
             setTimeout(() => { progressFill.style.width = '50%'; progressStatus.textContent = 'Processing NLP Sentiment analysis...'; }, 800);
 
@@ -849,6 +867,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             progressFill.style.width = '90%';
             progressStatus.textContent = 'Finalizing stats dashboard...';
+            // Stop and clear the row counter
+            if (counterInterval) clearInterval(counterInterval);
+            if (rowCounter) rowCounter.textContent = '✓ done';
 
             const data = await response.json();
             progressFill.style.width = '100%';

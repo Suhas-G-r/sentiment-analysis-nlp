@@ -300,7 +300,7 @@
             <!-- File Upload Card -->
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-upload"></i> Upload CSV Dataset</h3>
+                    <h3><i class="fas fa-upload"></i> Upload Dataset</h3>
                     <div class="engine-selector">
                         <label for="batchEngineSelect">Model Engine:</label>
                         <select id="batchEngineSelect" class="styled-select">
@@ -311,10 +311,10 @@
                 </div>
                 
                 <div id="dropZone" class="drop-zone">
-                    <i class="fas fa-file-csv drop-icon"></i>
-                    <p class="drop-text">Drag & drop your CSV file here or <span class="browse-link">browse files</span></p>
-                    <p class="drop-hint">Supports .csv and .txt files — best suited for opinion text (reviews, feedback, tweets). Columns named 'text', 'review', 'comment', etc. are auto-detected.</p>
-                    <p class="drop-hint" style="margin-top:4px; color: #64748b;">⚡ Recommended: up to 500 rows for the best interactive experience.</p>
+                    <i class="fas fa-file-alt drop-icon"></i>
+                    <p class="drop-text">Drag &amp; drop your file here or <span class="browse-link">browse files</span></p>
+                    <p class="drop-hint">Supports <strong>.csv</strong> and <strong>.txt</strong> — best suited for opinion text (reviews, feedback, tweets). Columns named 'text', 'review', 'comment', etc. are auto-detected.</p>
+                    <p class="drop-hint" style="margin-top:4px; color: #64748b;">⚡ Supports up to 10 MB &nbsp;&middot;&nbsp; Recommended: 1,000–2,000 reviews for best interactive results.</p>
                     <input type="file" id="fileInput" accept=".csv,.txt" style="display: none;" />
                 </div>
                 
@@ -322,7 +322,7 @@
                     <div class="progress-bar">
                         <div id="progressFill" class="progress-fill"></div>
                     </div>
-                    <p id="progressStatus" class="progress-status">Uploading & analyzing file...</p>
+                    <p id="progressStatus" class="progress-status">Uploading &amp; analyzing file... <span id="rowCounter" style="font-weight:600;"></span></p>
                 </div>
             </div>
 

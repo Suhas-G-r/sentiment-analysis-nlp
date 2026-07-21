@@ -334,7 +334,7 @@ def analyze_batch():
         
     try:
         filename = file.filename.lower()
-        ROW_LIMIT = 500  # Safe for Render free tier (512MB RAM, 30s timeout)
+        ROW_LIMIT = 1_000  # Safe for Render free tier (512MB RAM, 30s timeout)
 
         if filename.endswith('.txt'):
             # --- Stream .txt line-by-line (never loads full file into RAM) ---

@@ -313,8 +313,9 @@
                 <div id="dropZone" class="drop-zone">
                     <i class="fas fa-file-csv drop-icon"></i>
                     <p class="drop-text">Drag & drop your CSV file here or <span class="browse-link">browse files</span></p>
-                    <p class="drop-hint">CSV must contain a column for text (e.g., 'text', 'review', 'comment', or similar)</p>
-                    <input type="file" id="fileInput" accept=".csv" style="display: none;" />
+                    <p class="drop-hint">Supports .csv and .txt files — best suited for opinion text (reviews, feedback, tweets). Columns named 'text', 'review', 'comment', etc. are auto-detected.</p>
+                    <p class="drop-hint" style="margin-top:4px; color: #64748b;">⚡ Recommended: up to 10,000 rows for the best interactive experience.</p>
+                    <input type="file" id="fileInput" accept=".csv,.txt" style="display: none;" />
                 </div>
                 
                 <div id="uploadProgress" class="progress-container" style="display: none;">
@@ -327,6 +328,35 @@
 
             <!-- Batch Results Dashboard (Hidden by default) -->
             <div id="batchResultSection" class="card result-card" style="display: none;">
+
+                <!-- Data quality warning (shown when column is not opinion text) -->
+                <div id="batchColumnWarning" style="display: none; margin-bottom: 18px; background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 13px 16px; font-size: 0.84rem; color: #78350f;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="font-size: 1.1rem; line-height: 1.4;">⚠️</span>
+                        <div>
+                            <strong style="display: block; margin-bottom: 4px; color: #92400e;">Column may not contain opinion text</strong>
+                            <span id="batchColumnWarningMsg" style="color: #451a03;"></span>
+                            <div style="margin-top: 8px; font-size: 0.78rem; color: #78350f; background: rgba(245, 158, 11, 0.1); border-radius: 5px; padding: 6px 10px;">
+                                💡 <strong>Try datasets like:</strong> Amazon reviews, IMDB movie reviews, Twitter airline sentiment, Yelp reviews, or any CSV with a column of human-written opinion text.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Large dataset truncation notice (shown when file exceeds 10k rows) -->
+                <div id="batchTruncationNotice" style="display: none; margin-bottom: 18px; background: rgba(59, 130, 246, 0.07); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 13px 16px; font-size: 0.84rem; color: #1e3a5f;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="font-size: 1.1rem; line-height: 1.4;">📊</span>
+                        <div>
+                            <strong style="display: block; margin-bottom: 4px; color: #1e40af;">Large dataset detected</strong>
+                            <span id="batchTruncationMsg"></span>
+                            <div style="margin-top: 8px; font-size: 0.78rem; color: #1e3a5f; background: rgba(59,130,246,0.08); border-radius: 5px; padding: 6px 10px;">
+                                💡 For full dataset analysis, run the app locally. Web apps process synchronously — keeping it under 10,000 rows ensures a fast, smooth experience.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Widgets Summary Grid -->
                 <div class="stats-grid">
                     <div class="stat-card">

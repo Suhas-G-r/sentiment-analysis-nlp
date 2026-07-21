@@ -779,10 +779,11 @@ document.addEventListener('DOMContentLoaded', () => {
     dropZone.addEventListener('drop', (e) => {
         const dt = e.dataTransfer;
         const files = dt.files;
-        if (files.length > 0 && files[0].name.endsWith('.csv')) {
+        const name = files[0]?.name || '';
+        if (files.length > 0 && (name.endsWith('.csv') || name.endsWith('.txt'))) {
             handleCsvUpload(files[0]);
         } else {
-            showToast('Please drop a valid CSV file!', 'warning');
+            showToast('Please drop a valid .csv or .txt file!', 'warning');
         }
     });
 
@@ -805,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             uploadProgress.style.display = 'block';
             progressFill.style.width = '20%';
-            progressStatus.textContent = 'Uploading CSV dataset...';
+            progressStatus.textContent = 'Uploading & analyzing dataset...';
             batchResultSection.style.display = 'none';
 
             // Simulate progress transition
@@ -841,6 +842,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Render stats, charts, table, and bind CSV download
     function renderBatchDashboard(data) {
+        // Show or hide the data quality warning banner
+        const batchColumnWarning = document.getElementById('batchColumnWarning');
+        const batchColumnWarningMsg = document.getElementById('batchColumnWarningMsg');
+        if (batchColumnWarning && batchColumnWarningMsg) {
+            if (data.column_warning) {
+                batchColumnWarningMsg.textContent = data.column_warning_message;
+                batchColumnWarning.style.display = 'block';
+            } else {
+                batchColumnWarning.style.display = 'none';
+            }
+        }
+
+        // Show or hide the large dataset truncation notice
+        const batchTruncationNotice = document.getElementById('batchTruncationNotice');
+        const batchTruncationMsg = document.getElementById('batchTruncationMsg');
+        if (batchTruncationNotice && batchTruncationMsg) {
+            if (data.truncated_to) {
+                const orig = data.original_row_count.toLocaleString();
+                const cap  = data.truncated_to.toLocaleString();
+                batchTruncationMsg.textContent =
+                    `Your file contains ${orig} rows. For interactive analysis, only the first ${cap} rows were processed.`;
+                batchTruncationNotice.style.display = 'block';
+            } else {
+                batchTruncationNotice.style.display = 'none';
+            }
+        }
+
         // Set stats widgets
         statTotalRows.textContent = data.total_rows;
         

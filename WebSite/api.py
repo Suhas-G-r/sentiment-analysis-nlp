@@ -333,10 +333,47 @@ def analyze_batch():
         return jsonify({'error': 'Empty filename'}), 400
         
     try:
-        df = pd.read_csv(file)
-        if len(df) == 0:
-            return jsonify({'error': 'Empty CSV file'}), 400
+        filename = file.filename.lower()
+        
+        if filename.endswith('.txt'):
+            # --- Smart .txt parser ---
+            raw_content = file.read().decode('utf-8', errors='replace')
+            lines = [l.rstrip('\n\r') for l in raw_content.splitlines() if l.strip()]
             
+            if not lines:
+                return jsonify({'error': 'Empty text file'}), 400
+            
+            # Detect FastText format: lines start with __label__
+            if lines[0].startswith('__label__'):
+                texts = []
+                for line in lines:
+                    # Strip the label prefix: __label__2 <space> actual text
+                    parts = line.split(' ', 1)
+                    texts.append(parts[1] if len(parts) > 1 else '')
+                df = pd.DataFrame({'text': texts})
+            # Detect TSV (tab-separated) — use first column as text
+            elif '\t' in lines[0]:
+                import io
+                df = pd.read_csv(io.StringIO('\n'.join(lines)), sep='\t', on_bad_lines='skip')
+            else:
+                # Plain text: one entry per line
+                df = pd.DataFrame({'text': lines})
+            # --- End .txt parser ---
+        else:
+            df = pd.read_csv(file)
+        
+        if len(df) == 0:
+            return jsonify({'error': 'Empty file'}), 400
+
+        # Cap rows to avoid timeouts on very large files (e.g. 400k-row FastText datasets)
+        ROW_LIMIT = 10_000
+        original_row_count = len(df)
+        truncated_to = None
+        if original_row_count > ROW_LIMIT:
+            df = df.head(ROW_LIMIT)
+            truncated_to = ROW_LIMIT
+
+
         # Find the text column (first check exact, then check substring matches, skipping metadata)
         text_column = None
         for col in df.columns:
@@ -359,7 +396,50 @@ def analyze_batch():
         if text_column is None:
             # Fallback to the first column
             text_column = df.columns[0]
-            
+
+        # --- Data Quality Heuristic ---
+        # Sample up to 20 non-null values from the detected text column and
+        # check whether they look like natural language or numeric/timestamp data.
+        import re as _re
+        _sample = df[text_column].dropna().astype(str).head(20).tolist()
+        _numeric_or_date_count = 0
+        _timestamp_pattern = _re.compile(
+            r'^\d{4}[-/]\d{2}[-/]\d{2}|^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}'
+        )
+        for _val in _sample:
+            _stripped = _val.strip()
+            # Check: pure number (int or float)
+            try:
+                float(_stripped)
+                _numeric_or_date_count += 1
+                continue
+            except ValueError:
+                pass
+            # Check: looks like a timestamp / date string
+            if _timestamp_pattern.match(_stripped):
+                _numeric_or_date_count += 1
+                continue
+            # Check: very short (1-3 chars) — likely an ID or code
+            if len(_stripped) <= 3:
+                _numeric_or_date_count += 1
+                continue
+            # Check: contains only digits and common separators (e.g. "2.02E+10")
+            if _re.fullmatch(r'[\d.,eE+\-\s]+', _stripped):
+                _numeric_or_date_count += 1
+
+        _column_warning = False
+        _column_warning_message = ""
+        if len(_sample) > 0 and (_numeric_or_date_count / len(_sample)) >= 0.6:
+            _column_warning = True
+            _column_warning_message = (
+                f"The detected text column \u2018{text_column}\u2019 appears to contain "
+                "numeric, date, or ID values rather than natural language text. "
+                "Sentiment analysis is designed for opinion-bearing text such as "
+                "customer reviews, feedback, or social media posts. Results may not "
+                "be meaningful for this dataset."
+            )
+        # --- End Data Quality Heuristic ---
+
         sentiments = []
         for idx, row in df.iterrows():
             row_text = str(row[text_column]) if pd.notnull(row[text_column]) else ""
@@ -424,7 +504,11 @@ def analyze_batch():
             'top_words': top_words,
             'download_url': f"/temp_batches/{filename}",
             'preview_data': preview_rows,
-            'text_column': text_column
+            'text_column': text_column,
+            'column_warning': _column_warning,
+            'column_warning_message': _column_warning_message,
+            'truncated_to': truncated_to,
+            'original_row_count': original_row_count
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -781,4 +865,5 @@ def retrain_model():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', debug=True, port=port)

@@ -334,43 +334,45 @@ def analyze_batch():
         
     try:
         filename = file.filename.lower()
-        
+        ROW_LIMIT = 2_000  # Keep well within Render free-tier 30s timeout
+
         if filename.endswith('.txt'):
-            # --- Smart .txt parser ---
+            # --- Smart .txt parser (reads only first ROW_LIMIT lines to avoid OOM) ---
             raw_content = file.read().decode('utf-8', errors='replace')
-            lines = [l.rstrip('\n\r') for l in raw_content.splitlines() if l.strip()]
-            
+            all_lines = [l.rstrip('\n\r') for l in raw_content.splitlines() if l.strip()]
+            original_row_count = len(all_lines)
+            lines = all_lines[:ROW_LIMIT]  # cap before building df
+
             if not lines:
                 return jsonify({'error': 'Empty text file'}), 400
-            
+
             # Detect FastText format: lines start with __label__
             if lines[0].startswith('__label__'):
                 texts = []
                 for line in lines:
-                    # Strip the label prefix: __label__2 <space> actual text
                     parts = line.split(' ', 1)
                     texts.append(parts[1] if len(parts) > 1 else '')
                 df = pd.DataFrame({'text': texts})
-            # Detect TSV (tab-separated) — use first column as text
+            # Detect TSV (tab-separated)
             elif '\t' in lines[0]:
                 import io
                 df = pd.read_csv(io.StringIO('\n'.join(lines)), sep='\t', on_bad_lines='skip')
             else:
-                # Plain text: one entry per line
                 df = pd.DataFrame({'text': lines})
             # --- End .txt parser ---
         else:
             df = pd.read_csv(file)
-        
+            original_row_count = len(df)
+
         if len(df) == 0:
             return jsonify({'error': 'Empty file'}), 400
 
-        # Cap rows to avoid timeouts on very large files (e.g. 400k-row FastText datasets)
-        ROW_LIMIT = 10_000
-        original_row_count = len(df)
+        # Cap rows (mainly for CSV; .txt already capped above)
         truncated_to = None
-        if original_row_count > ROW_LIMIT:
+        if len(df) > ROW_LIMIT:
             df = df.head(ROW_LIMIT)
+            truncated_to = ROW_LIMIT
+        elif original_row_count > ROW_LIMIT:
             truncated_to = ROW_LIMIT
 
 
@@ -473,13 +475,12 @@ def analyze_batch():
         # Get most common terms
         all_words = []
         stop_words = set(stopwords.words('english'))
+        _word_re = __import__('re').compile(r"[a-z']{3,}")
         for text_val in df[text_column].dropna():
-            cleaned = clean_text(str(text_val))
-            words = word_tokenize(cleaned)
-            for w in words:
-                if w not in stop_words and len(w) > 2:
+            for w in _word_re.findall(str(text_val).lower()):
+                if w not in stop_words:
                     all_words.append(w)
-        
+
         from collections import Counter
         word_counts = Counter(all_words).most_common(10)
         top_words = [{'word': w, 'count': c} for w, c in word_counts]

@@ -385,7 +385,8 @@ def analyze_batch():
         # Cap and track truncation
         truncated_to = None
         if filename.endswith('.txt'):
-            if original_row_count > ROW_LIMIT:
+            # original_row_count is either an int (exact) or a string like '1000+' (truncated)
+            if isinstance(original_row_count, str) or original_row_count > ROW_LIMIT:
                 truncated_to = ROW_LIMIT
         else:
             # For CSV: if we got ROW_LIMIT+1 rows, file has more

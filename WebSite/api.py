@@ -347,11 +347,16 @@ def analyze_batch():
                 stripped = raw_line.rstrip('\n\r').strip()
                 if not stripped:
                     continue
-                original_row_count += 1
                 if first_line is None:
                     first_line = stripped
                 if len(lines) < ROW_LIMIT:
                     lines.append(stripped)
+                else:
+                    # File has more rows than limit — stop immediately, don't read the rest
+                    original_row_count = f'{ROW_LIMIT}+'
+                    break
+            if not isinstance(original_row_count, str):
+                original_row_count = len(lines)
 
             if not lines:
                 return jsonify({'error': 'Empty text file'}), 400

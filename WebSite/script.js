@@ -799,6 +799,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle File Upload and Network Call
     async function handleCsvUpload(file) {
+        // --- File size guard ---
+        const MAX_SIZE_BYTES  = 10 * 1024 * 1024;  // 10 MB hard limit
+        const WARN_SIZE_BYTES =  2 * 1024 * 1024;  //  2 MB soft warning
+        const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
+
+        if (file.size > MAX_SIZE_BYTES) {
+            uploadProgress.style.display = 'block';
+            progressFill.style.width = '100%';
+            progressFill.style.background = '#ef4444';
+            progressStatus.textContent =
+                `File too large (${fileSizeMB} MB). Max allowed is 10 MB. ` +
+                `Create a smaller sample with the first 500 rows and try again.`;
+            return;
+        }
+        if (file.size > WARN_SIZE_BYTES) {
+            showToast(
+                `Large file detected (${fileSizeMB} MB). Upload may take a while on the free server. ` +
+                `Consider using a smaller sample for faster results.`,
+                'warning'
+            );
+        }
+        // Reset progress bar color in case it was set red previously
+        progressFill.style.background = '';
+        // --- End file size guard ---
+
         const formData = new FormData();
         formData.append('file', file);
         formData.append('engine', batchEngineSelect.value);
